@@ -34,12 +34,15 @@ If you imagine our application as a restaurant:
 Follow these simple steps to start the application:
 
 1. **Install Node.js:** Download and install Node.js from [nodejs.org](https://nodejs.org). Use the standard default settings.
+
 2. **Install Dependencies:** Open your computer's "Terminal" or "Command Prompt", navigate to this project's folder, and type:
    `npm install`
    *(This creates a new `node_modules` folder containing required background files. You can just ignore this folder).*
+   
 3. **Start the Server:** In the same terminal window, type:
    `npm start`
    *(Leave this terminal window open in the background).*
+   
 4. **Open the Dashboard:** Open your web browser (Chrome, Safari, Edge) and go to:
    **http://localhost:5000**
    
