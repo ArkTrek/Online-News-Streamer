@@ -1,12 +1,38 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Session Configuration
+app.use(session({
+    secret: 'your-secret-key-here', // Change this to a secure random string in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: false, // Set to true if you deploy with HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // 24 hours
+    }
+}));
+
+// Dummy Credentials (replace with a database check later if needed)
+const VALID_USERNAME = 'admin';
+const VALID_PASSWORD = 'password123';
+
+// Authentication Middleware
+const requireAuth = (req, res, next) => {
+    if (req.session.isAuthenticated) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+};
 
 let cached_categories = {};
 
@@ -83,7 +109,38 @@ async function fetchAndCategorizeChannels() {
     }
 }
 
-app.get('/', async (req, res) => {
+// --- Authentication Routes ---
+
+app.get('/login', (req, res) => {
+    // If already logged in, redirect to the streamer
+    if (req.session.isAuthenticated) {
+        return res.redirect('/');
+    }
+    res.render('login', { errorMessage: null });
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+        req.session.isAuthenticated = true;
+        res.redirect('/');
+    } else {
+        res.render('login', { errorMessage: 'Invalid username or password. Please try again.' });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) console.error("Error destroying session:", err);
+        res.redirect('/login');
+    });
+});
+
+// --- Protected Main Route ---
+
+// Added the requireAuth middleware here
+app.get('/', requireAuth, async (req, res) => {
     const categorizedChannels = await fetchAndCategorizeChannels();
 
     let default_channel = null;
